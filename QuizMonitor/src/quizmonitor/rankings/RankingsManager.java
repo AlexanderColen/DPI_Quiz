@@ -48,15 +48,15 @@ public class RankingsManager {
      * @return The Map containing the current rankings.
      */
     public Map getRankings() {
-        if (rankings == null) {
+        if (this.rankings == null) {
             this.readRankings();
         }
         
-        return rankings;
+        return this.rankings;
     }
     
     public List<String> getRankingsForUI() {
-        if (rankings == null) {
+        if (this.rankings == null) {
             this.readRankings();
         }
         
@@ -79,17 +79,17 @@ public class RankingsManager {
      * Write the rankings to a specific text file.
      */
     public void writeRankings() {
-        if (rankings == null) {
-            System.out.println("No rankings found, thus not worth fetching and writing.");
+        if (this.rankings == null) {
+            LOG.log(Level.INFO, "No rankings found, thus not worth fetching and writing.");
             return;
         }
         
-        System.out.println("Writing rankings...");
+        LOG.log(Level.INFO, "Writing rankings...");
         
-        rankings = new HashMap<>();
-        rankings.put("Alex", 123);
-        rankings.put("Frank", 49);
-        rankings.put("Bert", 12);
+        this.rankings = new HashMap<>();
+        this.rankings.put("Alex", 123);
+        this.rankings.put("Frank", 49);
+        this.rankings.put("Bert", 12);
         
         try {
             FileWriter fileWriter;
@@ -122,7 +122,7 @@ public class RankingsManager {
      * Read the rankings from the specified text file.
      */
     public void readRankings() {
-        System.out.println("Reading rankings...");
+        LOG.log(Level.INFO, "Reading rankings...");
         
         String fileName = "rankings.txt";
         String entry;
@@ -153,11 +153,11 @@ public class RankingsManager {
      * @return Returns true if the participant was added succesfully, false if they were already registered.
      */
     public boolean addToRankings(String identifier) {
-        if (rankings == null) {
+        if (this.rankings == null) {
             this.readRankings();
         }
         
-        System.out.println("Adding to rankings...");
+        LOG.log(Level.INFO, "Adding to rankings...");
         
         this.rankings.put(identifier, 0);
         
@@ -171,11 +171,11 @@ public class RankingsManager {
      * @throws ParticipantNotFoundException Exception that gets thrown when the participant does not exist within the rankings.
      */
     public void adjustRankings(String identifier, Integer points) throws ParticipantNotFoundException {
-        if (rankings == null) {
+        if (this.rankings == null) {
             this.readRankings();
         }
         
-        System.out.println("Adjusting rankings...");
+        LOG.log(Level.INFO, "Adjusting rankings...");
         
         Integer foundPoints = Integer.parseInt(this.rankings.get(identifier).toString());
         
@@ -195,7 +195,7 @@ public class RankingsManager {
      * @throws ParticipantNotFoundException Exception that gets thrown when the participant does not exist within the rankings.
      */
     public Integer fetchPointForParticipant(String identifier) throws ParticipantNotFoundException {
-        if (rankings == null) {
+        if (this.rankings == null) {
             this.readRankings();
         }
         

@@ -8,7 +8,23 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="QuizClient.jar" size="2600" download="eager" />
+    <jar href="QuizClient.jar" size="11824" download="eager" />
+    <jar href="lib\activemq-all-5.15.4.jar" size="18141932" download="eager" />
+    <jar href="lib\activemq-broker-5.15.4.jar" size="1186476" download="eager" />
+    <jar href="lib\activemq-client-5.15.4.jar" size="1429184" download="eager" />
+    <jar href="lib\activemq-console-5.15.4.jar" size="195674" download="eager" />
+    <jar href="lib\activemq-jaas-5.15.4.jar" size="37291" download="eager" />
+    <jar href="lib\activemq-kahadb-store-5.15.4.jar" size="671083" download="eager" />
+    <jar href="lib\activemq-openwire-legacy-5.15.4.jar" size="685735" download="eager" />
+    <jar href="lib\activemq-protobuf-1.1.jar" size="147874" download="eager" />
+    <jar href="lib\activemq-spring-5.15.4.jar" size="170010" download="eager" />
+    <jar href="lib\activemq-web-5.15.4.jar" size="115944" download="eager" />
+    <jar href="lib\geronimo-j2ee-management_1.1_spec-1.0.1.jar" size="20220" download="eager" />
+    <jar href="lib\geronimo-jms_1.1_spec-1.1.1.jar" size="32359" download="eager" />
+    <jar href="lib\geronimo-jta_1.0.1B_spec-1.0.1.jar" size="14637" download="eager" />
+    <jar href="lib\hawtbuf-1.11.jar" size="50155" download="eager" />
+    <jar href="lib\jcl-over-slf4j-1.7.25.jar" size="16515" download="eager" />
+    <jar href="lib\slf4j-api-1.7.25.jar" size="41203" download="eager" />
   </resources>
   <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="QuizClient" >
     <param name="requiredFXVersion" value="8.0+"/>

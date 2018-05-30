@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.logging.Logger;
 
 /**
@@ -62,6 +63,20 @@ public final class QuestionManager {
         return this.questions;
     }
     
+    public String[] getRandomQuestion() {
+        int random = new Random().nextInt(this.questions.size()) + 1;
+        
+        String[] question = new String[5];
+        
+        question[0] = (String) this.questions.get(random);
+        question[1] = (String) this.answersA.get(random - 1);
+        question[2] = (String) this.answersB.get(random - 1);
+        question[3] = (String) this.answersC.get(random - 1);
+        question[4] = (String) this.answersD.get(random - 1);
+        
+        return question;
+    }
+    
     /**
      * Get the requests.
      * @return The Map containing the current requests.
@@ -72,6 +87,14 @@ public final class QuestionManager {
         }
         
         return this.requests;
+    }
+    
+    public void addRequest(String username, String question) {
+        this.requests.put(username, question);
+    }
+    
+    public void removeRequest(String username, String question) {
+        this.requests.remove(username, question);
     }
 
     /**
@@ -90,7 +113,7 @@ public final class QuestionManager {
         while (it.hasNext()) {
             Map.Entry<String, Integer> pairs = it.next();
             
-            String currentEntry = String.format("%s requested question: '%s'", pairs.getKey(), this.questions.get(pairs.getValue()));
+            String currentEntry = String.format("%s requested question: '%s'", pairs.getKey(), pairs.getValue());
             
             returnRequests.add(currentEntry);
         }
@@ -123,12 +146,21 @@ public final class QuestionManager {
     
     /**
      * Check if the answer is correct for a question.
-     * @param questionID The ID of the question.
+     * @param question The question.
      * @param answer The chosen answer to the question.
      * @return True if it was correct, false if not.
      */
-    public boolean checkIfCorrectAnswer(Integer questionID, String answer) {
-        return this.answersA.get(questionID - 1).equalsIgnoreCase(answer);
+    public boolean checkIfCorrectAnswer(String question, String answer) {
+        int questionID = 0;
+        
+        for (int i = 0; i < this.questions.size(); i++) {
+            if (((String) this.questions.get(i + 1)).equalsIgnoreCase(question)) {
+                questionID = i;
+                break;
+            }
+        }
+                
+        return this.answersA.get(questionID).equalsIgnoreCase(answer);
     }
     
     /**
@@ -158,7 +190,7 @@ public final class QuestionManager {
                 }
             }
             
-            if (sameWords / questionWords.size() * 100 <= 0.75) {
+            if (sameWords / questionWords.size() * 100 <= 0.9) {
                 return false;
             }
         }

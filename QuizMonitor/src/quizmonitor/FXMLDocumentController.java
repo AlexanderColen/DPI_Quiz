@@ -23,7 +23,7 @@ public class FXMLDocumentController implements Initializable {
     private static final Logger LOG = Logger.getLogger(FXMLDocumentController.class.getName());
         
     @FXML
-    private ListView<String> listview;
+    public ListView<String> listview;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {

@@ -86,11 +86,6 @@ public class RankingsManager {
         
         LOG.log(Level.INFO, "Writing rankings...");
         
-        this.rankings = new HashMap<>();
-        this.rankings.put("Alex", 123);
-        this.rankings.put("Frank", 49);
-        this.rankings.put("Bert", 12);
-        
         try {
             FileWriter fileWriter;
             BufferedWriter bufferedWriter;

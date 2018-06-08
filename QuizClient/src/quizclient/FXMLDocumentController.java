@@ -11,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import quizclient.broker.BrokerManager;
 
 /**
@@ -19,6 +20,7 @@ import quizclient.broker.BrokerManager;
  */
 public class FXMLDocumentController implements Initializable {
     
+    private String username = "";
     private BrokerManager broker;
     
     @FXML
@@ -26,6 +28,12 @@ public class FXMLDocumentController implements Initializable {
     
     @FXML
     private Label lblOutcome;
+    
+    @FXML
+    private Button btnNewQuestion;
+    
+    @FXML
+    private Button btnRankings;
     
     @FXML
     private Button btnRequest;
@@ -43,17 +51,65 @@ public class FXMLDocumentController implements Initializable {
     private Button btnD;
     
     @FXML
-    private void requestQuestion(ActionEvent event) {
-        System.out.println("Sending message...");
-        label.setText("Waiting for message...");
+    private TextField txtUsername;
+    
+    @FXML
+    private TextField txtNewQuestion;
+    
+    @FXML
+    private TextField txtAnswerA;
+    
+    @FXML
+    private TextField txtAnswerB;
+    
+    @FXML
+    private TextField txtAnswerC;
+    
+    @FXML
+    private TextField txtAnswerD;
+    
+    @FXML
+    private void requestRankings(ActionEvent event) {
+        System.out.println("Request Rankings Hit");
+        this.username = txtUsername.getText();
         
         if (this.broker == null) {
             this.broker = BrokerManager.getInstance(this);
         }
         
-        this.broker.sendQuestionRequest("Alex");
+        if (!this.username.equalsIgnoreCase("")) {
+            this.broker.sendRankingsRequest(this.username);
+
+            btnRequest.setDisable(true);
+            btnRankings.setDisable(true);
+            txtUsername.setDisable(true);
+            System.out.println("Sending message...");
+            label.setText("Waiting for message...");
+        } else {
+            label.setText("Please enter your username.");
+        }
+    }
+    
+    @FXML
+    private void requestQuestion(ActionEvent event) {
+        System.out.println("Request Question Hit");
+        this.username = txtUsername.getText();
+            
+        if (this.broker == null) {
+            this.broker = BrokerManager.getInstance(this);
+        }
         
-        btnRequest.setDisable(true);
+        if (!this.username.equalsIgnoreCase("")) {
+            this.broker.sendQuestionRequest(this.username);
+
+            btnRequest.setDisable(true);
+            btnRankings.setDisable(true);
+            txtUsername.setDisable(true);
+            System.out.println("Sending message...");
+            label.setText("Waiting for message...");
+        } else {
+            label.setText("Please enter your username.");
+        }
     }
     
     @FXML
@@ -64,9 +120,8 @@ public class FXMLDocumentController implements Initializable {
             this.broker = BrokerManager.getInstance(this);
         }
         
-        //TODO implement UI stuff and message sending.
         setAnswerButtonDisabled(true);
-        this.broker.sendAnswer(btnA.getText(), "Alex");
+        this.broker.sendAnswer(btnA.getText(), this.username);
     }
     
     @FXML
@@ -77,9 +132,8 @@ public class FXMLDocumentController implements Initializable {
             this.broker = BrokerManager.getInstance(this);
         }
         
-        //TODO implement UI stuff and message sending.
         setAnswerButtonDisabled(true);
-        this.broker.sendAnswer(btnB.getText(), "Alex");
+        this.broker.sendAnswer(btnB.getText(), this.username);
     }
     
     @FXML
@@ -90,9 +144,8 @@ public class FXMLDocumentController implements Initializable {
             this.broker = BrokerManager.getInstance(this);
         }
         
-        //TODO implement UI stuff and message sending.
         setAnswerButtonDisabled(true);
-        this.broker.sendAnswer(btnC.getText(), "Alex");
+        this.broker.sendAnswer(btnC.getText(), this.username);
     }
     
     @FXML
@@ -103,14 +156,38 @@ public class FXMLDocumentController implements Initializable {
             this.broker = BrokerManager.getInstance(this);
         }
         
-        //TODO implement UI stuff and message sending.
         setAnswerButtonDisabled(true);
-        this.broker.sendAnswer(btnD.getText(), "Alex");
+        this.broker.sendAnswer(btnD.getText(), this.username);
+    }
+    
+    @FXML
+    private void submitNewQuestion(ActionEvent event) {
+        System.out.println("Submitting new question...");
+        
+        if (this.broker == null) {
+            this.broker = BrokerManager.getInstance(this);
+        }
+        
+        this.username = txtUsername.getText();
+        String question = txtNewQuestion.getText();
+        String answerA = txtAnswerA.getText();
+        String answerB = txtAnswerB.getText();
+        String answerC = txtAnswerC.getText();
+        String answerD = txtAnswerD.getText();
+        
+        if (!this.username.equals("") && !question.equals("") && !answerA.equals("") && !answerB.equals("") && !answerC.equals("") && !answerD.equals("")) {
+            this.broker.sendNewQuestion(this.username, question, answerA, answerB, answerC, answerD);
+            txtNewQuestion.setText("");
+            txtAnswerA.setText("");
+            txtAnswerB.setText("");
+            txtAnswerC.setText("");
+            txtAnswerD.setText("");
+        }
     }
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // TODO
+        // TODO ???
     }
     
     public void updateUIWithResult(boolean outcome, int incrementAmount) {
@@ -168,9 +245,32 @@ public class FXMLDocumentController implements Initializable {
             }
         }).start();
     }
+
+    public void updateUIWithRankings(int rank, int points, String username) {
+        new Thread(new Runnable() {
+            @Override public void run() {
+                Platform.runLater(new Runnable() {
+                    @Override public void run() {
+                        label.setText(String.format("%s is ranked %s with %s points!", username, rank, points));
+                        
+                        setAnswerButtonDisabled(true);
+                    }
+                });
+            }
+        }).start();
+    }
     
     private void setAnswerButtonDisabled(boolean value) {
         btnRequest.setDisable(!value);
+        btnRankings.setDisable(!value);
+        txtUsername.setDisable(!value);
+        
+        btnNewQuestion.setDisable(!value);
+        txtNewQuestion.setDisable(!value);
+        txtAnswerA.setDisable(!value);
+        txtAnswerB.setDisable(!value);
+        txtAnswerC.setDisable(!value);
+        txtAnswerD.setDisable(!value);
         
         btnA.setDisable(value);
         btnB.setDisable(value);

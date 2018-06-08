@@ -25,11 +25,11 @@ public final class BrokerManager {
     private static BrokerManager instance;
     private static FXMLDocumentController ui;
     
-    private static int MESSAGE_ID = 1;
     private static String correlationID;
     
     private static final String OUTCOME_PROPERTY = "outcome";
     private static final String QUESTION_PROPERTY = "question";
+    private static final String RANK_PROPERTY = "rank";
     private static final String ANSWER_A = "A";
     private static final String ANSWER_B = "B";
     private static final String ANSWER_C = "C";
@@ -70,11 +70,6 @@ public final class BrokerManager {
             msg.setStringProperty("request", "question");
             msg.setStringProperty("username", username);
             
-            msg.setJMSCorrelationID(String.valueOf(MESSAGE_ID));
-            MESSAGE_ID++;
-            
-            System.out.println(String.format("Sending message with ID: %s", msg.getJMSCorrelationID()));
-            
             conn.start();
             producer.send(msg);
             
@@ -104,6 +99,7 @@ public final class BrokerManager {
                     
                     boolean questionExists = msg.propertyExists(QUESTION_PROPERTY);
                     boolean outcomeExists = msg.propertyExists(OUTCOME_PROPERTY);
+                    boolean rankExists = msg.propertyExists(RANK_PROPERTY);
                     
                     if (questionExists) {
                         String receivedQuestion = msg.getStringProperty(QUESTION_PROPERTY);
@@ -123,6 +119,13 @@ public final class BrokerManager {
                         
                         //Update UI.
                         ui.updateUIWithResult(receivedOutcome, points);
+                    } else if (rankExists) {
+                        int rank = msg.getIntProperty("rank");
+                        int points = msg.getIntProperty("points");
+                        String username = msg.getStringProperty("username");
+                        
+                        //Show in UI.
+                        ui.updateUIWithRankings(rank, points, username);
                     }
                 } catch (JMSException ex) {
                     LOG.log(Level.SEVERE, ex.getMessage(), ex);
@@ -155,6 +158,59 @@ public final class BrokerManager {
             msg.setJMSCorrelationID(correlationID);
             
             System.out.println(String.format("Sending message with ID: %s", msg.getJMSCorrelationID()));
+            
+            conn.start();
+            producer.send(msg);
+            
+            System.out.println("Message sent without issues.");
+        } catch (JMSException ex) {
+            LOG.log(Level.SEVERE, ex.getMessage(), ex);
+        }
+    }
+
+    public void sendRankingsRequest(String username) {
+        try {
+            ConnectionFactory cf = new ActiveMQConnectionFactory("tcp://localhost:61616");
+            Connection conn = cf.createConnection();
+            
+            Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            
+            Queue queueQuestion = session.createQueue("question");
+            
+            MessageProducer producer = session.createProducer(queueQuestion);
+            
+            Message msg = session.createMessage();
+            msg.setStringProperty("request", "rankings");
+            msg.setStringProperty("username", username);
+            
+            conn.start();
+            producer.send(msg);
+            
+            System.out.println("Message sent without issues.");
+        } catch (JMSException ex) {
+            LOG.log(Level.SEVERE, ex.getMessage(), ex);
+        }
+    }
+
+    public void sendNewQuestion(String username, String question, String answerA, String answerB, String answerC, String answerD) {
+        try {
+            ConnectionFactory cf = new ActiveMQConnectionFactory("tcp://localhost:61616");
+            Connection conn = cf.createConnection();
+            
+            Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            
+            Queue queueQuestion = session.createQueue("question");
+            
+            MessageProducer producer = session.createProducer(queueQuestion);
+            
+            Message msg = session.createMessage();
+            msg.setStringProperty("request", "new");
+            msg.setStringProperty("username", username);
+            msg.setStringProperty("question", question);
+            msg.setStringProperty("A", answerA);
+            msg.setStringProperty("B", answerB);
+            msg.setStringProperty("C", answerC);
+            msg.setStringProperty("D", answerD);
             
             conn.start();
             producer.send(msg);

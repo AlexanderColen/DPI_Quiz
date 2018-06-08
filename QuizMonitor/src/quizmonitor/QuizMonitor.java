@@ -10,7 +10,6 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.apache.activemq.broker.BrokerFactory;
 import org.apache.activemq.broker.BrokerService;
-import quizmonitor.broker.BrokerManager;
 import quizmonitor.rankings.RankingsManager;
 
 /**
@@ -23,17 +22,8 @@ public class QuizMonitor extends Application {
     
     private static BrokerService broker;
     
-    private static BrokerManager manager;
-    
     @Override
     public void start(Stage stage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("FXMLDocument.fxml"));
-        
-        Scene scene = new Scene(root);
-        
-        stage.setScene(scene);
-        stage.show();
-        
         try {
             String brokerURL = "broker:(tcp://localhost:61615)";
             
@@ -44,11 +34,16 @@ public class QuizMonitor extends Application {
             broker = BrokerFactory.createBroker(uri);
             
             broker.start();
-            
-            manager = BrokerManager.getInstance();
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, ex.getMessage(), ex);
         }
+        
+        Parent root = FXMLLoader.load(getClass().getResource("FXMLDocument.fxml"));
+        
+        Scene scene = new Scene(root);
+        
+        stage.setScene(scene);
+        stage.show();
     }
 
     /**
@@ -70,5 +65,7 @@ public class QuizMonitor extends Application {
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, ex.getMessage(), ex);
         }
+        
+        System.exit(0);
     }
 }

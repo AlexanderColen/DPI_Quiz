@@ -12,6 +12,7 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
+import quizmonitor.broker.BrokerManager;
 import quizmonitor.rankings.RankingsManager;
 
 /**
@@ -27,6 +28,12 @@ public class FXMLDocumentController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        BrokerManager.getInstance(this);
+        
+        refreshUI();
+    }
+    
+    public void refreshUI() {
         assert listview != null : "fx:id=\"listview\" was not injected: check your FXML file 'list.fxml'.";
 
         final Task<List<String>> listViewTask = new Task<List<String>>() {

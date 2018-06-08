@@ -20,6 +20,7 @@ public final class QuestionManager {
     private static QuestionManager instance = null;
     
     private Map requests;
+    
     private final Map questions;
     private final List<String> answersA;
     private final List<String> answersB;
@@ -77,18 +78,6 @@ public final class QuestionManager {
         return question;
     }
     
-    /**
-     * Get the requests.
-     * @return The Map containing the current requests.
-     */
-    public Map getRequests() {
-        if (this.requests == null) {
-            this.requests = new HashMap<>();
-        }
-        
-        return this.requests;
-    }
-    
     public void addRequest(String username, String question) {
         this.requests.put(username, question);
     }
@@ -113,7 +102,7 @@ public final class QuestionManager {
         while (it.hasNext()) {
             Map.Entry<String, Integer> pairs = it.next();
             
-            String currentEntry = String.format("%s requested question: '%s'", pairs.getKey(), pairs.getValue());
+            String currentEntry = String.format("%s requested: '%s'", pairs.getKey(), pairs.getValue());
             
             returnRequests.add(currentEntry);
         }
@@ -131,9 +120,13 @@ public final class QuestionManager {
      * @return True if the question was added succesfully, otherwise false.
      */
     public boolean addNewQuestion(String question, String answerA, String answerB, String answerC, String answerD) {
+        System.out.println("Adding new question hit.");
+        
         if (!this.verifyUniqueQuestion(question)) {
-            return false;
+            System.out.println("Duplicate.");
         }
+        
+        System.out.println("Adding question.");
         
         this.questions.put(this.questions.size() +1, question);
         this.answersA.add(answerA);

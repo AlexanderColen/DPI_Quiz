@@ -30,6 +30,7 @@ public class BrokerManager {
     private static Map correlationRequest;
     
     private static final String MESSAGE_REQUEST = "request";
+    private static int MESSAGE_ID = 1;
     
     private static QuestionManager manager;
     
@@ -81,12 +82,9 @@ public class BrokerManager {
             try {
                 System.out.println("Received message from Monitor.");
                 
-                String ID = msg.getJMSCorrelationID();
-                
-                System.out.println(String.format("Received message with ID: %s", ID));
-                
-                
-                //TODO handle message based on content.
+                if (msg.getStringProperty(MESSAGE_REQUEST).equalsIgnoreCase("rankings")) {
+                    sendRankingsToClient(msg.getIntProperty("rank"), msg.getIntProperty("points"), msg.getStringProperty("username"), msg.getJMSCorrelationID());
+                }
             } catch (JMSException ex) {
                 LOG.log(Level.SEVERE, ex.getMessage(), ex);
             }
@@ -113,15 +111,30 @@ public class BrokerManager {
                 System.out.println("Received message from Client.");
                 
                 String ID = msg.getJMSCorrelationID();
+                
+                if (ID == null) {
+                    ID = String.format("%s", MESSAGE_ID);
+                    MESSAGE_ID++;
+                }
+                
                 String username = msg.getStringProperty("username");
+                String request = msg.getStringProperty(MESSAGE_REQUEST);
                 
-                System.out.println(String.format("Received message with ID: %s and Request: %s from User: %s", ID, msg.getStringProperty(MESSAGE_REQUEST), username));
+                System.out.println(String.format("Received message with ID: %s and Request: %s from User: %s", ID, request, username));
                 
-                if (msg.getStringProperty(MESSAGE_REQUEST).equalsIgnoreCase("question")) {
+                if (request.equalsIgnoreCase("question")) {
                     sendQuestionToClient(ID, username);
-                } else if (msg.getStringProperty(MESSAGE_REQUEST).equalsIgnoreCase("rankings")) {
-                    //TODO relay message to monitor and ask for rankings.
-                } else if (msg.getStringProperty(MESSAGE_REQUEST).equalsIgnoreCase("answer")) {
+            
+                    //Update UI.
+                    manager.addRequest(username, "Fetch a Question");
+                    ui.refreshUI();
+                } else if (request.equalsIgnoreCase("rankings")) {
+                    sendRankingsRequestToMonitor(username, ID);
+            
+                    //Update UI.
+                    manager.addRequest(username, "Rankings");
+                    ui.refreshUI();
+                } else if (request.equalsIgnoreCase("answer")) {
                     int incrementAmount = 1;
                     boolean outcome = manager.checkIfCorrectAnswer((String) correlationRequest.get(ID), msg.getStringProperty("answer"));
                     
@@ -130,8 +143,15 @@ public class BrokerManager {
                     }
                     
                     sendOutcomeToClient(outcome, ID, incrementAmount, username);
-                    
-                    //TODO increment rankings.
+                    sendIncrementToMonitor(incrementAmount, username);
+                } else if (request.equalsIgnoreCase("new")) {
+                    if (manager.addNewQuestion(msg.getStringProperty("question"), msg.getStringProperty("A"), msg.getStringProperty("B"), msg.getStringProperty("C"), msg.getStringProperty("D"))) {
+                        sendIncrementToMonitor(5, username);
+                    }
+            
+                    //Update UI.
+                    manager.addRequest(username, "Submit New Question");
+                    ui.refreshUI();
                 }
             } catch (JMSException ex) {
                 LOG.log(Level.SEVERE, ex.getMessage(), ex);
@@ -173,10 +193,6 @@ public class BrokerManager {
             System.out.println("Message sent without issues.");
             
             correlationRequest.put(correlationID, question[0]);
-            
-            //Update UI.
-            manager.addRequest(username, question[0]);
-            ui.refreshUI();
         } catch (JMSException ex) {
             LOG.log(Level.SEVERE, ex.getMessage(), ex);
         }
@@ -208,8 +224,91 @@ public class BrokerManager {
             System.out.println("Message sent without issues.");
             
             //Update UI.
-            manager.removeRequest(username, (String) correlationRequest.get(correlationID));
+            manager.removeRequest(username, "Question");
             ui.refreshUI();
+        } catch (JMSException ex) {
+            LOG.log(Level.SEVERE, ex.getMessage(), ex);
+        }
+    }
+    
+    public static void sendRankingsToClient(int rank, int points, String username, String correlationID) {
+        try {
+            ConnectionFactory cf = new ActiveMQConnectionFactory("tcp://localhost:61617");
+            Connection conn = cf.createConnection();
+            
+            Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            
+            Queue queueQuestion = session.createQueue("question");
+            
+            MessageProducer producer = session.createProducer(queueQuestion);
+            
+            Message msg = session.createMessage();
+            msg.setStringProperty("username", username);
+            msg.setIntProperty("points", points);
+            msg.setIntProperty("rank", rank);
+            msg.setJMSCorrelationID(correlationID);
+            
+            System.out.println(String.format("Sending message with ID: %s", msg.getJMSCorrelationID()));
+            
+            conn.start();
+            producer.send(msg);
+            
+            System.out.println("Message sent without issues.");
+        } catch (JMSException ex) {
+            LOG.log(Level.SEVERE, ex.getMessage(), ex);
+        }
+    }
+    
+    public static void sendIncrementToMonitor(int incrementAmount, String username) {
+        try {
+            ConnectionFactory cf = new ActiveMQConnectionFactory("tcp://localhost:61615");
+            Connection conn = cf.createConnection();
+            
+            Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            
+            Queue queueRankings = session.createQueue("rankings");
+            
+            MessageProducer producer = session.createProducer(queueRankings);
+            
+            Message msg = session.createMessage();
+            
+            msg.setStringProperty(MESSAGE_REQUEST, "increment");
+            msg.setIntProperty("points", incrementAmount);
+            msg.setStringProperty("username", username);
+            
+            System.out.println("Sending increment to Monitor.");
+            
+            conn.start();
+            producer.send(msg);
+            
+            System.out.println("Message sent without issues.");
+        } catch (JMSException ex) {
+            LOG.log(Level.SEVERE, ex.getMessage(), ex);
+        }
+    }
+    
+    public static void sendRankingsRequestToMonitor(String username, String correlationID) {
+        try {
+            ConnectionFactory cf = new ActiveMQConnectionFactory("tcp://localhost:61615");
+            Connection conn = cf.createConnection();
+            
+            Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            
+            Queue queueRankings = session.createQueue("rankings");
+            
+            MessageProducer producer = session.createProducer(queueRankings);
+            
+            Message msg = session.createMessage();
+            
+            msg.setStringProperty(MESSAGE_REQUEST, "rankings");
+            msg.setStringProperty("username", username);
+            
+            System.out.println("Sending Rankings request to Monitor.");
+            
+            conn.start();
+            producer.send(msg);
+            
+            System.out.println("Message sent without issues.");
         } catch (JMSException ex) {
             LOG.log(Level.SEVERE, ex.getMessage(), ex);
         }

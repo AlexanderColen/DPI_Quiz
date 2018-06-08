@@ -63,5 +63,7 @@ public class QuizServer extends Application {
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, ex.getMessage(), ex);
         }
+        
+        System.exit(0);
     }
 }

@@ -5,8 +5,6 @@
         <group name="All">
             <file>file:/E:/Programming/NetbeansProjects/DPI_Quiz/QuizMonitor/src/quizmonitor/QuizMonitor.java</file>
         </group>
-        <group name="DPI">
-            <file>file:/E:/Programming/NetbeansProjects/DPI_Quiz/QuizMonitor/src/quizmonitor/broker/BrokerManager.java</file>
-        </group>
+        <group name="DPI"/>
     </open-files>
 </project-private>

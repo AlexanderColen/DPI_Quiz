@@ -7,8 +7,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -59,7 +63,7 @@ public class RankingsManager {
         if (this.rankings == null) {
             this.readRankings();
         }
-        
+            
         Iterator<Entry<String, Integer>> it = this.rankings.entrySet().iterator();
         
         List<String> returnRankings = new ArrayList<>();
@@ -163,20 +167,19 @@ public class RankingsManager {
      * Adjust the rankings by giving a specific participant points.
      * @param identifier The identifier of the participant.
      * @param points The amount of points that need to be added to the rankings for this participant.
-     * @throws ParticipantNotFoundException Exception that gets thrown when the participant does not exist within the rankings.
      */
-    public void adjustRankings(String identifier, Integer points) throws ParticipantNotFoundException {
+    public void adjustRankings(String identifier, Integer points) {
         if (this.rankings == null) {
             this.readRankings();
         }
         
         LOG.log(Level.INFO, "Adjusting rankings...");
         
-        Integer foundPoints = Integer.parseInt(this.rankings.get(identifier).toString());
-        
-        if (foundPoints == null) {
-            throw new ParticipantNotFoundException();
+        if (this.rankings.get(identifier) == null) {
+            this.addToRankings(identifier);
         }
+        
+        Integer foundPoints = Integer.parseInt(this.rankings.get(identifier).toString());
         
         foundPoints += points;
         
@@ -194,12 +197,35 @@ public class RankingsManager {
             this.readRankings();
         }
         
-        Integer foundPoints = Integer.parseInt(this.rankings.get(identifier).toString());
+        Integer foundPoints = 0;
         
-        if (foundPoints == null) {
-            throw new ParticipantNotFoundException();
+        if (this.rankings.get(identifier) != null) {
+            foundPoints = Integer.parseInt(this.rankings.get(identifier).toString());
+        } else {
+            this.addToRankings(identifier);
         }
         
         return foundPoints;
+    }
+
+    public int getRankForParticipant(String username) {
+        if (this.rankings == null) {
+            this.readRankings();
+        }
+            
+        Iterator it = this.rankings.entrySet().iterator();
+        int count = 1;
+        
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            
+            if (pair.getKey().toString().equalsIgnoreCase(username)) {
+                return count;
+            }
+            
+            count++;
+        }
+        
+        return 0;
     }
 }

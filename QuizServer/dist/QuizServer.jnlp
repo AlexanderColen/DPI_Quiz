@@ -8,7 +8,7 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="QuizServer.jar" size="12602" download="eager" />
+    <jar href="QuizServer.jar" size="13560" download="eager" />
     <jar href="lib\activemq-all-5.15.4.jar" size="18141932" download="eager" />
     <jar href="lib\activemq-broker-5.15.4.jar" size="1186476" download="eager" />
     <jar href="lib\activemq-client-5.15.4.jar" size="1429184" download="eager" />
